@@ -52,14 +52,14 @@ func main() {
 		// Setting up cron jobs
 		c := cron.New()
 		// Every 30 minutes download new news from list of RSS feeds and store in Mongo if not already exist
-		c.AddFunc("*/10 * * * *", func() {
+		c.AddFunc("*/30 * * * *", func() {
 			if err := DownloadNewNews(feeds, *db); err != nil {
 				log.Fatal(err)
 			}
 		})
 
 		//  Every 10 minutes check if there is new news and send it to the channel
-		c.AddFunc("* * * * *", func() {
+		c.AddFunc("*/10 * * * *", func() {
 			if err := publishNewsToChannel(db, tgChannelName, bot, translator); err != nil {
 				log.Fatal(err)
 			}
