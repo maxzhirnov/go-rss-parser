@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/maxzhirnov/go-rss-parser/db"
@@ -47,5 +48,9 @@ func publishNewsToChannel(db *db.DB, channelName string, bot *tgbot.BotAPI, tran
 }
 
 func formatPostMessage(postTitle, postText, postSourceLink string) string {
-	return fmt.Sprintf("**%s**\n%s\n\n%s", postTitle, postText, postSourceLink)
+	message := fmt.Sprintf("*%s*\n\n%s\n\n%s", postTitle, postText, postSourceLink)
+	if os.Getenv("ENV") == "development" {
+		return fmt.Sprintf("[dev]\n\n%s", message)
+	}
+	return message
 }
