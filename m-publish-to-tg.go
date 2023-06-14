@@ -11,6 +11,9 @@ import (
 )
 
 func publishNewsToChannel(db *db.DB, channelName string, bot *tgbot.BotAPI, translator *translate.Translator) error {
+
+	translate := false
+
 	recentNewsItem, err := db.GetMostRecentItem(240)
 	if err != nil {
 		return err
@@ -21,23 +24,23 @@ func publishNewsToChannel(db *db.DB, channelName string, bot *tgbot.BotAPI, tran
 		return nil
 	}
 
-	var postTitle string
-	var postText string
-	var postSourceLink string
+	var postTitle string = recentNewsItem.Title
+	var postText string = recentNewsItem.Description
+	var postSourceLink string = recentNewsItem.URL
 
-	if postTitleReq, err := translator.Translate(recentNewsItem.Title, "ru"); err != nil {
-		postTitle = recentNewsItem.Title
-	} else {
-		postTitle = postTitleReq.Translations[0].Text
+	if translate {
+		if postTitleReq, err := translator.Translate(recentNewsItem.Title, "ru"); err != nil {
+			postTitle = recentNewsItem.Title
+		} else {
+			postTitle = postTitleReq.Translations[0].Text
+		}
+
+		if postTextReq, err := translator.Translate(recentNewsItem.Description, "ru"); err != nil {
+			postText = recentNewsItem.Description
+		} else {
+			postText = postTextReq.Translations[0].Text
+		}
 	}
-
-	if postTextReq, err := translator.Translate(recentNewsItem.Description, "ru"); err != nil {
-		postText = recentNewsItem.Description
-	} else {
-		postText = postTextReq.Translations[0].Text
-	}
-
-	postSourceLink = recentNewsItem.URL
 
 	msgText := formatPostMessage(postTitle, postText, postSourceLink)
 	message := tgbot.NewMessageToChannel(channelName, msgText)
