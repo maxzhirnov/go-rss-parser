@@ -70,7 +70,7 @@ func main() {
 		})
 
 		//  Every 10 minutes check if there is new news and send it to the channel
-		c.AddFunc("*/10 * * * *", func() {
+		c.AddFunc("0 9-19/2 * * *", func() {
 			log.Println("Running cron job to publish item")
 			if err := publishNewsToChannel(db, tgChannelName, bot, translator); err != nil {
 				log.Println(err)
