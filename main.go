@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"os"
 
@@ -37,6 +38,15 @@ func main() {
 		}
 	)
 
+	// Setting up logging
+	logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logFile.Close()
+	mw := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(mw)
+
 	// Initilazing dependencies
 	if db, err = mongodb.New(mongodbConnString, "rss-feed", "items"); err != nil {
 		log.Fatalf("Error iniyilizing mondodb: %s\n", err)
@@ -53,21 +63,27 @@ func main() {
 		c := cron.New()
 		// Every 30 minutes download new news from list of RSS feeds and store in Mongo if not already exist
 		c.AddFunc("*/30 * * * *", func() {
+			log.Println("Running cron job to download new news")
 			if err := DownloadNewNews(feeds, *db); err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		})
 
 		//  Every 10 minutes check if there is new news and send it to the channel
 		c.AddFunc("*/10 * * * *", func() {
+			log.Println("Running cron job to publish item")
 			if err := publishNewsToChannel(db, tgChannelName, bot, translator); err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		})
 		c.Start()
 	} else {
+		log.Println("Running in dev mode")
+		if err := DownloadNewNews(feeds, *db); err != nil {
+			log.Println(err)
+		}
 		if err := publishNewsToChannel(db, tgChannelName, bot, translator); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}
 

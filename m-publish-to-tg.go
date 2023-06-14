@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -13,6 +14,11 @@ func publishNewsToChannel(db *db.DB, channelName string, bot *tgbot.BotAPI, tran
 	recentNewsItem, err := db.GetMostRecentItem(240)
 	if err != nil {
 		return err
+	}
+
+	if recentNewsItem == nil {
+		log.Println("recentNewsItem is nil")
+		return nil
 	}
 
 	var postTitle string
