@@ -10,9 +10,7 @@ import (
 	"github.com/maxzhirnov/go-rss-parser/translate"
 )
 
-func publishNewsToChannel(db *db.DB, channelName string, bot *tgbot.BotAPI, translator *translate.Translator) error {
-
-	translate := false
+func publishNewsToChannel(db *db.DB, channelName string, bot *tgbot.BotAPI, translator *translate.Translator, translate bool) error {
 
 	recentNewsItem, err := db.GetMostRecentItem(240)
 	if err != nil {
